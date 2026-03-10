@@ -21,6 +21,7 @@ The Drive Engine is a motivation system for AI Agents that:
 | Energy System | Resource mechanism that limits task generation count. Energy resets daily at fixed time (default: 2:00 AM) |
 | User Intervention | Toggle controlling whether tasks require human confirmation before execution |
 | Growth Factor | Factor controlling how fast drive scores increase per heartbeat (default: 0.1) |
+| Drive Threshold | Minimum drive score required to generate tasks (default: 0.5) |
 
 ## Architecture
 
@@ -120,6 +121,9 @@ The Python script outputs structured instructions for the Agent:
 ```
 ACTION: heartbeat
 DRIVE: completion
+DRIVE_SCORE: 0.80
+THRESHOLD: 0.50
+DRIVE_EXCEEDS_THRESHOLD: true
 ENERGY_REMAINING: 70
 TASK_COUNT: 2
 ENERGY_PER_TASK: 10
@@ -135,14 +139,25 @@ INSTRUCTIONS: Based on completion drive, generate 2 small tasks. Format: --tasks
 ACTION_REQUIRED: 1 task(s) exceeded planned duration. Please verify status.
 ```
 
+### Below Threshold Example
+
+```
+ACTION: heartbeat
+DRIVE: curiosity
+DRIVE_SCORE: 0.30
+THRESHOLD: 0.50
+DRIVE_EXCEEDS_THRESHOLD: false
+ENERGY_REMAINING: 70
+TASK_COUNT: 0
+EXECUTING_TASKS: 0/2
+INSTRUCTIONS: No tasks can be generated. Active drive 'curiosity' score (0.30) is below threshold (0.50). Waiting for drive to grow. Growth factor: 0.1 per heartbeat.
+```
+
 ## Configuration
 
 ### config.json
 ```json
 {
-  "heartbeat": {
-    "interval_minutes": 30
-  },
   "energy": {
     "max_energy": 100,
     "cost_per_task": 10,
@@ -151,7 +166,8 @@ ACTION_REQUIRED: 1 task(s) exceeded planned duration. Please verify status.
   "drives": {
     "list": ["curiosity", "completion", "optimization"],
     "priority": ["completion", "curiosity", "optimization"],
-    "growth_factor": 0.1
+    "growth_factor": 0.1,
+    "threshold": 0.5
   },
   "task": {
     "max_count": 3,
@@ -275,6 +291,23 @@ If growth_factor = 0.1:
 - Task completed: completion resets to 0
 
 The heartbeat output includes `DRIVE_GROWTH` showing which drives increased.
+
+## Drive Threshold
+
+The system requires a drive to exceed a minimum threshold before generating tasks:
+
+- **threshold** (default: 0.5): Minimum score required for a drive to generate tasks
+- Only drives with score >= threshold can generate tasks
+- If all drives are below threshold, no tasks are generated
+- The Agent waits for drives to grow before attempting tasks
+
+### Example
+If threshold = 0.5:
+- Drive scores: curiosity 0.3, completion 0.8, optimization 0.4
+- completion (0.8) exceeds threshold -> can generate tasks
+- After 3 heartbeats without task: all drives grow, but completion remains active
+
+The heartbeat output includes `DRIVE_EXCEEDS_THRESHOLD` indicating if tasks can be generated.
 
 ## Executing Tasks Limit
 

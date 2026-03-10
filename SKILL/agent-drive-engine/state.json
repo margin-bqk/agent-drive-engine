@@ -12,7 +12,7 @@
   "unfinished_tasks": [],
   "executing_tasks": {},
   "user_intervention": {
-    "enabled": true,
+    "enabled": false,
     "pending_tasks": []
   }
 }

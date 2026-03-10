@@ -27,9 +27,12 @@ import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Configuration paths
-CONFIG_PATH = "./SKILL/agent-drive-engine/config.json"
-STATE_PATH = "./SKILL/agent-drive-engine/state.json"
+# Configuration paths - use SKILL directory as base for portability
+# Assumes script is in SKILL/agent-drive-engine/ directory
+SCRIPT_DIR = Path(__file__).parent.resolve()
+SKILL_DIR = SCRIPT_DIR.parent  # Parent of agent-drive-engine is SKILL
+CONFIG_PATH = SCRIPT_DIR / "config.json"
+STATE_PATH = SCRIPT_DIR / "state.json"
 
 
 def load_json(file_path):
@@ -198,21 +201,37 @@ def mode_heartbeat(config, state):
     
     # Calculate active drive after growth
     active_drive = calculate_active_drive(config, state)
+    active_drive_score = state["drive_scores"].get(active_drive, 0)
+    threshold = config["drives"].get("threshold", 0.5)
+    
     remaining_energy = state["energy"]["remaining"]
-    available_tasks = calculate_available_tasks(config, state)
     cost_per_task = config["energy"]["cost_per_task"]
-    max_consumption = available_tasks * cost_per_task
     max_executing = config["task"]["max_executing"]
     growth_factor = config["drives"].get("growth_factor", 0.1)
     
     executing_tasks = state.get("executing_tasks", {})
     current_executing = len(executing_tasks)
     
+    # Check if drive exceeds threshold
+    drive_exceeds_threshold = active_drive_score >= threshold
+    
     # Get task status and stale tasks
     task_details, stale_tasks = get_task_status(state, config)
     
+    # Calculate available tasks based on energy and executing limit (not threshold yet)
+    available_tasks = calculate_available_tasks(config, state)
+    
+    # If drive doesn't exceed threshold, no tasks can be generated
+    if not drive_exceeds_threshold:
+        available_tasks = 0
+    
+    max_consumption = available_tasks * cost_per_task
+    
     print(f"ACTION: heartbeat")
     print(f"DRIVE: {active_drive}")
+    print(f"DRIVE_SCORE: {active_drive_score}")
+    print(f"THRESHOLD: {threshold}")
+    print(f"DRIVE_EXCEEDS_THRESHOLD: {drive_exceeds_threshold}")
     print(f"ENERGY_REMAINING: {remaining_energy}")
     print(f"TASK_COUNT: {available_tasks}")
     print(f"ENERGY_PER_TASK: {cost_per_task}")
@@ -234,9 +253,20 @@ def mode_heartbeat(config, state):
     if stale_tasks:
         print(f"STALE_TASKS: {stale_tasks}")
     
-    # Generate instructions
-    if available_tasks > 0:
-        print(f"INSTRUCTIONS: Based on {active_drive} drive, generate {available_tasks} small tasks. Each task costs {cost_per_task} energy, total consumption not exceeding {max_consumption}. Current executing: {current_executing}, max: {max_executing}. Format: --tasks \"taskID|plannedMinutes|energyCost,...\" Example: --tasks \"task1|30|10,task2|60|20\"")
+    # Generate instructions based on threshold
+    user_intervention = state.get("user_intervention", {})
+    intervention_enabled = user_intervention.get("enabled", False)
+    
+    if not drive_exceeds_threshold:
+        print(f"INSTRUCTIONS: No tasks can be generated. Active drive '{active_drive}' score ({active_drive_score:.2f}) is below threshold ({threshold}). Waiting for drive to grow. Growth factor: {growth_factor} per heartbeat.")
+    elif available_tasks > 0:
+        task_instruction = f"Based on {active_drive} drive, generate {available_tasks} small tasks. Each task costs {cost_per_task} energy, total consumption not exceeding {max_consumption}. Current executing: {current_executing}, max: {max_executing}. Format: --tasks \"taskID|plannedMinutes|energyCost,...\" Example: --tasks \"task1|30|10,task2|60|20\""
+        
+        # Add user intervention notice if enabled
+        if intervention_enabled:
+            task_instruction += "\n\n[USER INTERVENTION REQUIRED] Please confirm with user before adding tasks. After user approval, execute update-state mode."
+        
+        print(f"INSTRUCTIONS: {task_instruction}")
     else:
         if current_executing >= max_executing:
             print(f"INSTRUCTIONS: No tasks can be generated. Executing tasks limit reached ({current_executing}/{max_executing}). Wait for a task to complete.")

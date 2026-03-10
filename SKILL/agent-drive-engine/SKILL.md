@@ -1,4 +1,4 @@
-# Nanobot Drive Engine Skill
+# Agent Drive Engine Skill
 
 ## Overview
 
@@ -23,34 +23,20 @@ This skill provides the Agent with an internal motivation system. It generates s
    ```
 
 2. **Configure cronjob for energy reset (daily at 02:00)**:
-   - See Deployment section in README.md for detailed cron configuration
+   - Configure a cronjob to trigger the Agent daily at 02:00
    - The cronjob should trigger the Agent to execute: `python3 drive_calc.py --mode=reset-energy`
-   - Reference: README.md Deployment section
+   - Example cron configuration: `0 2 * * * cd /path/to/agent && python3 drive_calc.py --mode=reset-energy`
 
-3. **Configure heartbeat for 30-minute intervals**:
-   - The heartbeat system triggers every 30 minutes
-   - When triggered, Agent should execute: `python3 drive_calc.py --mode=heartbeat`
-   - Reference: README.md Deployment section
-
-### Cronjob Configuration Reference
-
-**For 02:00 daily energy reset (cronjob)**:
-```bash
-# Trigger Agent to execute reset-energy mode
-0 2 * * * /path/to/agent/script.sh  # Script should run: python3 drive_calc.py --mode=reset-energy
-```
-
-**For 30-minute heartbeat**:
-```bash
-# Trigger Agent to execute heartbeat mode every 30 minutes
-*/30 * * * * /path/to/agent/heartbeat.sh  # Script should run: python3 drive_calc.py --mode=heartbeat
-```
-
-See README.md Deployment section for detailed configuration.
+3. **Configure heartbeat for deicated intervals**:
+   - The heartbeat system triggers every given minutes set by agent config
+   - Add a task to agent's HEARTBEAT.md. When triggered, agent should execute: `python3 drive_calc.py --mode=heartbeat`
 
 ## Execution Modes
 
 ### Mode 1: Heartbeat (triggered every 30 minutes)
+
+**User Intervention:**
+If `user_intervention.enabled` is set to `true` in state.json, the Agent must obtain user confirmation before generating tasks. The instructions will include a notice: `[USER INTERVENTION REQUIRED] Please confirm with user before adding tasks.`
 
 **Step 1: Execute calculation script**
 ```bash

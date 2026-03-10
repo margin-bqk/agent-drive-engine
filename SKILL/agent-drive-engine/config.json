@@ -10,7 +10,8 @@
   "drives": {
     "list": ["curiosity", "completion", "optimization"],
     "priority": ["completion", "curiosity", "optimization"],
-    "growth_factor": 0.1
+    "growth_factor": 0.1,
+    "threshold": 0.5
   },
   "task": {
     "max_count": 3,
