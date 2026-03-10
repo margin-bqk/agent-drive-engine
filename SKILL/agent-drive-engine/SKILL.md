@@ -24,12 +24,14 @@ This skill provides the Agent with an internal motivation system. It generates s
 
 2. **Configure cronjob for energy reset (daily at 02:00)**:
    - Configure a cronjob to trigger the Agent daily at 02:00
-   - The cronjob should trigger the Agent to execute: `python3 drive_calc.py --mode=reset-energy`
-   - Example cron configuration: `0 2 * * * cd /path/to/agent && python3 drive_calc.py --mode=reset-energy`
+   - Execute: `python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy`
+   - Example cron: `0 2 * * * cd /path/to/agent && python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy`
 
-3. **Configure heartbeat for deicated intervals**:
-   - The heartbeat system triggers every given minutes set by agent config
-   - Add a task to agent's HEARTBEAT.md. When triggered, agent should execute: `python3 drive_calc.py --mode=heartbeat`
+3. **Configure heartbeat task**:
+   - Task name: Drive Engine Heartbeat
+   - Execute: `python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=heartbeat`
+   - Trigger interval: Every 30 minutes (handled by agent heartbeat system)
+   - Add this task to your HEARTBEAT.md
 
 ## Execution Modes
 
@@ -40,7 +42,7 @@ If `user_intervention.enabled` is set to `true` in state.json, the Agent must ob
 
 **Step 1: Execute calculation script**
 ```bash
-python3 drive_calc.py --mode=heartbeat
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=heartbeat
 ```
 
 **Step 2: Parse output**
@@ -63,7 +65,7 @@ Follow the instructions in the `INSTRUCTIONS` field:
 
 **Step 4: Update state**
 ```bash
-python3 drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
 ```
 
 Format: `taskID|plannedMinutes|energyCost` (comma-separated for multiple tasks)
@@ -74,7 +76,7 @@ Format: `taskID|plannedMinutes|energyCost` (comma-separated for multiple tasks)
 
 **Step 1: Execute reset script**
 ```bash
-python3 drive_calc.py --mode=reset-energy
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy
 ```
 
 **Step 2: Parse output**
@@ -84,7 +86,7 @@ Confirm energy has been reset to 100
 
 **Step 1: Execute complete-task script**
 ```bash
-python3 drive_calc.py --mode=complete-task --task-id=task_001
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=complete-task --task-id=task_001
 ```
 
 **Step 2: Parse output**
@@ -118,7 +120,7 @@ TASK_DETAILS:
   - task_002: 65min / 60min (WARNING: exceeded by 5min)
 STALE_TASKS: [task_002]
 INSTRUCTIONS: Based on completion drive, generate 2 small tasks. Format: --tasks "taskID|plannedMinutes|energyCost,..."
-ACTION_REQUIRED: 1 task(s) exceeded planned duration. Please verify status and call: python3 drive_calc.py --mode=complete-task --task-id=TASK_ID
+ACTION_REQUIRED: 1 task(s) exceeded planned duration. Please verify status and call: python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=complete-task --task-id=TASK_ID
 ```
 
 ## Executing Tasks Limit and Timeout
@@ -132,7 +134,7 @@ The system limits the number of concurrent executing tasks (default: 2, configur
 ### Task Format
 When generating tasks, specify planned duration and energy cost:
 ```bash
-python3 drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
 ```
 Format: `taskID|plannedMinutes|energyCost`
 - If not specified, defaults from config.json are used (default_duration_minutes: 60, default_energy_cost: 10)

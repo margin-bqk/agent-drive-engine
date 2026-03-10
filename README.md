@@ -92,25 +92,25 @@ drive_engine/
 
 ### Heartbeat Mode
 ```bash
-python3 drive_calc.py --mode=heartbeat
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=heartbeat
 ```
 Calculates active drive and available task count. Output includes explicit instructions for the Agent.
 
 ### Reset Energy Mode
 ```bash
-python3 drive_calc.py --mode=reset-energy
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy
 ```
 Resets energy to 100 and updates last_reset timestamp.
 
 ### Update State Mode
 ```bash
-python3 drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
 ```
 Updates state.json with new tasks and deducts energy. Format: `taskID|plannedMinutes|energyCost`
 
 ### Complete Task Mode
 ```bash
-python3 drive_calc.py --mode=complete-task --task-id=task_001
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=complete-task --task-id=task_001
 ```
 Marks task as complete and resets corresponding drive score to 0.
 
@@ -225,7 +225,7 @@ Create drive_engine directory with the following files:
 The heartbeat system triggers every 30 minutes. When triggered, the Agent should execute:
 
 ```bash
-python3 drive_calc.py --mode=heartbeat
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=heartbeat
 ```
 
 This is handled by the heartbeat system, not cronjob.
@@ -238,12 +238,12 @@ Configure a cronjob to trigger the Agent to execute energy reset:
 crontab -e
 
 # Add this line for daily energy reset at 02:00
-0 2 * * * cd /path/to/agent && python3 drive_calc.py --mode=reset-energy >> /var/log/drive_engine.log 2>&1
+0 2 * * * cd /path/to/agent && python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy >> /var/log/drive_engine.log 2>&1
 ```
 
 The cronjob should trigger the Agent to execute:
 ```bash
-python3 drive_calc.py --mode=reset-energy
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=reset-energy
 ```
 
 ### 3. Agent Integration
@@ -263,7 +263,7 @@ The system tracks task execution time and detects stale tasks that exceed their 
 ### Task Format
 When generating tasks, specify planned duration and energy cost:
 ```bash
-python3 drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
+python3 <skill_path>/agent-drive-engine/drive_calc.py --mode=update-state --tasks "task1|30|10,task2|60|20" --energy-spent 30
 ```
 Format: `taskID|plannedMinutes|energyCost` (comma-separated for multiple tasks)
 - If not specified, defaults from config.json are used (default_duration_minutes: 60, default_energy_cost: 10)
