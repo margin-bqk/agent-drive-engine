@@ -1,0 +1,18 @@
+{
+  "drive_scores": {
+    "curiosity": 0.5,
+    "completion": 0.8,
+    "optimization": 0.3
+  },
+  "energy": {
+    "remaining": 70,
+    "last_reset": "2026-03-10 02:00:00"
+  },
+  "last_heartbeat": "2026-03-10 14:30:00",
+  "unfinished_tasks": [],
+  "executing_tasks": {},
+  "user_intervention": {
+    "enabled": true,
+    "pending_tasks": []
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "heartbeat": {
+    "interval_minutes": 30
+  },
+  "energy": {
+    "max_energy": 100,
+    "cost_per_task": 10,
+    "daily_reset_time": "02:00:00"
+  },
+  "drives": {
+    "list": ["curiosity", "completion", "optimization"],
+    "priority": ["completion", "curiosity", "optimization"],
+    "growth_factor": 0.1
+  },
+  "task": {
+    "max_count": 3,
+    "max_executing": 2,
+    "default_duration_minutes": 60,
+    "default_energy_cost": 10
+  },
+  "user_intervention": {
+    "default_enabled": false
+  }
+}
